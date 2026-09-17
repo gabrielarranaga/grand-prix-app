@@ -1,0 +1,272 @@
+@import "tailwindcss";
+
+:root {
+  /* Rojo mas sobrio y oscuro que el original (#e4231f), pedido explicito
+     para que se vea mas profesional y menos "chillon". */
+  --color-rojo: #c1291f;
+  --color-rojo-oscuro: #8f1c17;
+  --color-vino: #7a1f22;
+  --color-vino-oscuro: #551417;
+  --color-crema: #f7f0e6;
+  /* Tema claro: grafito es el texto oscuro de siempre. */
+  --color-grafito: #2b2724;
+  /* "ink" es el negro real, solo para oscurecer fotos (overlays), no para
+     el fondo de la app. */
+  --color-ink: #0a0a0c;
+}
+
+@theme inline {
+  --color-rojo: var(--color-rojo);
+  --color-rojo-oscuro: var(--color-rojo-oscuro);
+  --color-vino: var(--color-vino);
+  --color-vino-oscuro: var(--color-vino-oscuro);
+  --color-crema: var(--color-crema);
+  --color-grafito: var(--color-grafito);
+  --color-ink: var(--color-ink);
+  --font-display: var(--font-bricolage);
+  --font-sans: var(--font-inter);
+}
+
+html {
+  /* Evita el flash gris nativo al tocar botones/links en iOS y Android:
+     ya tenemos estados :active propios (btn-press), no hace falta el
+     highlight del sistema encima. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  color: var(--color-grafito);
+  background: #faf9f8;
+  min-height: 100dvh;
+  /* Ancla un contexto de stacking propio en body: sin esto, un descendiente
+     position:fixed con z-index negativo puede terminar pintandose DETRAS
+     del propio background del body en vez de encima, y el difuminado
+     desaparece por completo. */
+  isolation: isolate;
+}
+
+::selection {
+  background: rgba(228, 35, 31, 0.18);
+  color: var(--color-rojo-oscuro);
+}
+
+/* Anillo de foco de marca para navegacion por teclado (reemplaza el azul
+   por defecto del navegador, que desentona con el resto de la app). */
+:focus-visible {
+  outline: 2px solid var(--color-rojo);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Scrollbar fina y con acento rojo, para zonas con scroll propio (ej. el
+   cronograma horizontal). Se aplica solo donde se pone .scroll-fino, no
+   globalmente, para no alterar otros elementos con scroll nativo. */
+.scroll-fino {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(228, 35, 31, 0.3) transparent;
+}
+.scroll-fino::-webkit-scrollbar {
+  height: 6px;
+}
+.scroll-fino::-webkit-scrollbar-thumb {
+  background: rgba(228, 35, 31, 0.3);
+  border-radius: 9999px;
+}
+.scroll-fino::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ===== Fondo "liquid" difuminado, blanco con acentos rojos ===== */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient-bg span {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  animation: drift 22s ease-in-out infinite alternate;
+}
+.ambient-bg span:nth-child(1) {
+  top: -18%;
+  right: -15%;
+  width: 60vmax;
+  height: 60vmax;
+  background: radial-gradient(circle, rgba(228, 35, 31, 0.16), transparent 70%);
+}
+.ambient-bg span:nth-child(2) {
+  bottom: -22%;
+  left: -18%;
+  width: 65vmax;
+  height: 65vmax;
+  background: radial-gradient(circle, rgba(228, 35, 31, 0.1), transparent 70%);
+  animation-delay: -8s;
+}
+.ambient-bg span:nth-child(3) {
+  top: 25%;
+  left: 35%;
+  width: 42vmax;
+  height: 42vmax;
+  background: radial-gradient(circle, rgba(43, 39, 36, 0.05), transparent 70%);
+  animation-delay: -14s;
+}
+.ambient-bg span:nth-child(4) {
+  top: 2%;
+  left: -8%;
+  width: 34vmax;
+  height: 34vmax;
+  background: radial-gradient(circle, rgba(228, 35, 31, 0.12), transparent 70%);
+  animation-delay: -5s;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, 4%, 0) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-bg span {
+    animation: none;
+  }
+}
+
+/* ===== Animacion de entrada, sutil y liviana ===== */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fade-in-up 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in {
+    animation: none;
+  }
+}
+
+/* ===== Interacciones clean para tarjetas y botones ===== */
+.card-lift {
+  transition:
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -18px rgba(43, 39, 36, 0.22);
+}
+
+.btn-press {
+  transition:
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 160ms ease-out;
+}
+.btn-press:hover {
+  transform: translateY(-1px);
+}
+.btn-press:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Brillo suave para botones/CTAs principales en rojo */
+.glow-rojo {
+  box-shadow: 0 8px 22px -6px rgba(228, 35, 31, 0.45);
+}
+.glow-rojo:hover {
+  box-shadow: 0 10px 28px -6px rgba(228, 35, 31, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-lift,
+  .btn-press,
+  .glow-rojo {
+    transition: none;
+  }
+  .card-lift:hover {
+    transform: none;
+  }
+}
+
+/* ===== Materiales tipo "liquid glass", version clara =====
+   Superficie translucida con blur, para chrome flotante (header, nav,
+   tarjetas). El borde superior mas claro simula el filo donde pega la luz
+   sobre un material real. Nunca se apila un glass sobre otro glass (la
+   legibilidad se rompe): un glass siempre va sobre el fondo base o sobre
+   una superficie solida. */
+.glass {
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-top-color: rgba(255, 255, 255, 1);
+  box-shadow:
+    0 8px 26px -14px rgba(43, 39, 36, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass-rojo {
+  background: linear-gradient(165deg, rgba(228, 35, 31, 0.94), rgba(184, 23, 20, 0.94));
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 30px -12px rgba(184, 23, 20, 0.45);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: #ffffff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .glass-rojo {
+    background: var(--color-rojo);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ===== Firma visual: esquinas asimetricas en vez de parejas =====
+   Todo con el mismo radio en las 4 esquinas es lo primero que delata una
+   plantilla generica. Estas dos clases cortan solo dos esquinas opuestas,
+   bien pronunciado, para que las superficies grandes (fotos, tarjetas) se
+   sientan diseñadas a proposito y no copiadas de un kit de componentes. */
+.corte-asimetrico {
+  border-radius: 34px 10px 34px 10px;
+}
+.corte-asimetrico-sm {
+  border-radius: 20px 6px 20px 6px;
+}
+
+/* Cupo de horario: vidrio claro en reposo, rojo al pasar el mouse */
+.slot-chip {
+  transition:
+    background 200ms ease-out,
+    color 200ms ease-out,
+    border-color 200ms ease-out,
+    box-shadow 200ms ease-out,
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slot-chip:hover {
+  color: #ffffff;
+  background: linear-gradient(165deg, rgba(228, 35, 31, 0.94), rgba(184, 23, 20, 0.94));
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 26px -10px rgba(184, 23, 20, 0.5);
+}

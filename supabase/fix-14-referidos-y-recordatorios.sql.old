@@ -1,0 +1,257 @@
+-- Fix 14: sistema de referidos (premia cuando el referido PAGA, nunca al
+-- registrarse) + la base de datos para recordatorios automaticos de clase
+-- (2 horas antes). El envio real (WhatsApp + correo) lo dispara un cron
+-- fuera de la base de datos -- ver src/app/api/cron/recordatorios/route.ts.
+
+-- ============ REFERIDOS ============
+
+alter table public.profiles
+  add column codigo_referido text unique,
+  add column referido_por uuid references public.profiles (id),
+  add column saldo_credito numeric(10, 2) not null default 0;
+
+-- IMPORTANTE: la policy "profiles: usuario edita su propio perfil" solo
+-- exige auth.uid() = id -- no impide que un alumno intente cambiar SU
+-- PROPIO saldo_credito/codigo_referido/referido_por en ese mismo UPDATE
+-- (igual que ya pasaba con "rol", por eso ya existia este trigger). Se
+-- reemplaza para que tambien blindee estos 3 campos nuevos.
+create or replace function public.prevent_self_role_escalation()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if auth.uid() is not null and not public.is_admin() then
+    if new.rol is distinct from old.rol then
+      new.rol := old.rol;
+    end if;
+    if new.saldo_credito is distinct from old.saldo_credito then
+      new.saldo_credito := old.saldo_credito;
+    end if;
+    if new.codigo_referido is distinct from old.codigo_referido then
+      new.codigo_referido := old.codigo_referido;
+    end if;
+    if new.referido_por is distinct from old.referido_por then
+      new.referido_por := old.referido_por;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+create table public.referidos (
+  id uuid primary key default gen_random_uuid(),
+  referente_id uuid not null references public.profiles (id) on delete cascade,
+  referido_id uuid not null references public.profiles (id) on delete cascade,
+  -- pendiente: el referido se registro pero todavia no paga.
+  -- premiado: el referido pago su primer paquete y ya se le dio el credito al referente.
+  estado text not null default 'pendiente' check (estado in ('pendiente', 'premiado')),
+  fecha_creacion timestamptz not null default now(),
+  fecha_premiado timestamptz,
+  unique (referido_id)
+);
+
+alter table public.referidos enable row level security;
+
+create policy "referidos: referente ve los suyos"
+  on public.referidos for select
+  to authenticated
+  using (referente_id = auth.uid());
+
+create policy "referidos: admin gestiona todo"
+  on public.referidos for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Genera un codigo corto (3 letras del nombre + 3 digitos), reintentando
+-- si choca con uno existente.
+create function public.generar_codigo_referido(p_nombre text)
+returns text
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_base text;
+  v_codigo text;
+  v_intentos int := 0;
+begin
+  v_base := upper(regexp_replace(coalesce(p_nombre, 'GP'), '[^a-zA-Z]', '', 'g'));
+  v_base := left(coalesce(nullif(v_base, ''), 'GP'), 3);
+  loop
+    v_codigo := v_base || lpad(floor(random() * 1000)::text, 3, '0');
+    exit when not exists (select 1 from public.profiles where codigo_referido = v_codigo);
+    v_intentos := v_intentos + 1;
+    exit when v_intentos > 20;
+  end loop;
+  return v_codigo;
+end;
+$$;
+
+-- Reemplaza el trigger de creacion de perfil: ahora tambien genera el
+-- codigo de referido propio y, si vino con un codigo de invitacion valido
+-- (metadata "ref_code"), guarda quien lo trajo. No se deja auto-referir con
+-- el mismo telefono que el referente (chequeo simple anti-abuso).
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_codigo text;
+  v_referente public.profiles;
+  v_codigo_input text;
+begin
+  v_codigo := public.generar_codigo_referido(coalesce(new.raw_user_meta_data ->> 'nombre', new.email));
+  v_codigo_input := upper(trim(coalesce(new.raw_user_meta_data ->> 'ref_code', '')));
+
+  if v_codigo_input <> '' then
+    select * into v_referente from public.profiles where codigo_referido = v_codigo_input;
+
+    if v_referente.id is not null
+       and (new.raw_user_meta_data ->> 'telefono') is not null
+       and v_referente.telefono = (new.raw_user_meta_data ->> 'telefono') then
+      v_referente := null;
+    end if;
+  end if;
+
+  insert into public.profiles (id, nombre, telefono, rol, codigo_referido, referido_por)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data ->> 'nombre', new.email),
+    new.raw_user_meta_data ->> 'telefono',
+    coalesce((new.raw_user_meta_data ->> 'rol')::public.rol_usuario, 'alumno'),
+    v_codigo,
+    v_referente.id
+  );
+
+  if v_referente.id is not null then
+    insert into public.referidos (referente_id, referido_id) values (v_referente.id, new.id);
+  end if;
+
+  return new;
+end;
+$$;
+
+-- compras_paquete: registra cuanto credito/descuento se aplico (para que
+-- se vea en Pagos) y si ese alumno ya obtuvo su brevete (dispara el mensaje
+-- de "comparte tu link" en el momento de mas satisfaccion).
+alter table public.compras_paquete
+  add column descuento_aplicado numeric(10, 2) not null default 0,
+  add column brevete_obtenido boolean not null default false,
+  add column brevete_obtenido_en timestamptz;
+
+-- El premio real: cuando una compra pasa a 'pagado' por primera vez, si el
+-- alumno vino referido, se le suma credito al referente (tope: 5 premiados
+-- al mes por referente, para que no se vuelva un negocio aparte). Se guarda
+-- en "referidos" para no volver a premiar la misma compra dos veces.
+create function public.otorgar_credito_por_referido()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_referente_id uuid;
+  v_premiados_mes int;
+  v_credito constant numeric(10, 2) := 30;
+  v_tope_mensual constant int := 5;
+begin
+  if new.estado = 'pagado' and (old.estado is distinct from 'pagado') then
+    select referido_por into v_referente_id from public.profiles where id = new.alumno_id;
+
+    if v_referente_id is not null then
+      select count(*) into v_premiados_mes
+      from public.referidos
+      where referente_id = v_referente_id
+        and estado = 'premiado'
+        and fecha_premiado >= date_trunc('month', now());
+
+      if v_premiados_mes < v_tope_mensual then
+        update public.referidos
+          set estado = 'premiado', fecha_premiado = now()
+          where referido_id = new.alumno_id and estado = 'pendiente';
+
+        if found then
+          update public.profiles set saldo_credito = saldo_credito + v_credito where id = v_referente_id;
+        end if;
+      end if;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger after_compra_pagado
+  after update on public.compras_paquete
+  for each row execute function public.otorgar_credito_por_referido();
+
+-- ============ RECORDATORIOS DE CLASE ============
+
+alter table public.reservas
+  add column recordatorio_enviado boolean not null default false;
+
+-- Un solo lugar de encuentro para toda la escuela (hoy solo opera un carro).
+-- Si mas adelante hay mas de un carro/instructor en paralelo, esto tendria
+-- que pasar a ser por horario/profesor en vez de un valor unico global.
+create table public.configuracion_negocio (
+  id boolean primary key default true check (id),
+  punto_encuentro_texto text,
+  punto_encuentro_maps_link text
+);
+
+insert into public.configuracion_negocio (id) values (true);
+
+alter table public.configuracion_negocio enable row level security;
+
+create policy "configuracion: lectura autenticada"
+  on public.configuracion_negocio for select
+  to authenticated
+  using (true);
+
+create policy "configuracion: admin edita"
+  on public.configuracion_negocio for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+-- Lee reservas a 1h50-2h de empezar y que todavia no mandaron recordatorio.
+-- security definer porque necesita el email (vive en auth.users, no en
+-- profiles) y esto lo llama el cron con la service role.
+create function public.recordatorios_pendientes()
+returns table (
+  reserva_id uuid,
+  alumno_nombre text,
+  alumno_telefono text,
+  alumno_email text,
+  fecha date,
+  hora_inicio time,
+  instructor_nombre text,
+  punto_encuentro_texto text,
+  punto_encuentro_maps_link text
+)
+language sql
+security definer set search_path = public, auth
+stable
+as $$
+  select
+    r.id,
+    a.nombre,
+    a.telefono,
+    u.email,
+    h.fecha,
+    h.hora_inicio,
+    p.nombre,
+    cfg.punto_encuentro_texto,
+    cfg.punto_encuentro_maps_link
+  from public.reservas r
+  join public.horarios_clase h on h.id = r.horario_clase_id
+  join public.profiles a on a.id = r.alumno_id
+  join auth.users u on u.id = a.id
+  left join public.profiles p on p.id = h.profesor_id
+  left join public.configuracion_negocio cfg on true
+  where r.estado = 'confirmada'
+    and r.recordatorio_enviado = false
+    and (h.fecha + h.hora_inicio) between (now() + interval '1 hour 50 minutes') and (now() + interval '2 hours');
+$$;
+
+grant execute on function public.recordatorios_pendientes() to service_role;
