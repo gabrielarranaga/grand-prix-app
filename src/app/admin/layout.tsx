@@ -6,6 +6,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Resumen", icon: "dashboard" },
   { href: "/admin/horarios", label: "Horarios", icon: "calendar" },
   { href: "/admin/pagos", label: "Pagos", icon: "wallet" },
+  { href: "/admin/finanzas", label: "Finanzas", icon: "chart" },
   { href: "/admin/alumnos", label: "Alumnos", icon: "users" },
   { href: "/admin/configuracion", label: "Ajustes", icon: "settings" },
 ];

@@ -25,7 +25,7 @@ export function ConfiguracionFormulario({
           name="punto_encuentro_texto"
           type="text"
           defaultValue={puntoEncuentroTexto}
-          placeholder="Ej: Puerta principal del parque Juan Pablo II, San Miguel"
+          placeholder="Ej: Av. Lima 554, San Miguel"
           className="w-full rounded-lg border border-grafito/20 px-3.5 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-rojo/30 focus:border-rojo"
         />
       </div>

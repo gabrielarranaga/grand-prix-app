@@ -14,6 +14,7 @@ import {
   Gift,
   Settings,
   Users,
+  ChartLine,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ const ICONOS: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   wallet: Wallet,
   users: Users,
+  chart: ChartLine,
   star: Star,
   gift: Gift,
   settings: Settings,
@@ -39,6 +41,10 @@ export type NavItem = {
 
 export function DashboardNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
+  // Con 6+ opciones la barra no entra en un celular angosto si el item
+  // activo muestra su nombre: ahi se queda solo con el icono (el titulo de
+  // la pagina ya dice donde estas).
+  const compacto = items.length > 5;
 
   return (
     <nav
@@ -63,12 +69,22 @@ export function DashboardNav({ items }: { items: NavItem[] }) {
               aria-label={bloqueado ? `${label} (bloqueado)` : label}
               className={`btn-press relative flex items-center justify-center h-12 rounded-full transition-[width] ${
                 activo
-                  ? "w-auto px-4 gap-2 bg-rojo text-white shadow-md shadow-rojo/30"
+                  ? `w-auto px-4 gap-2 bg-rojo text-white shadow-md shadow-rojo/30 ${
+                      compacto ? "max-[420px]:w-12 max-[420px]:px-0" : ""
+                    }`
                   : "w-12 text-grafito/50 hover:text-rojo hover:bg-rojo/5"
               }`}
             >
               <Icon className="h-5 w-5 shrink-0" strokeWidth={activo ? 2.25 : 2} />
-              {activo && <span className="text-sm font-semibold whitespace-nowrap">{label}</span>}
+              {activo && (
+                <span
+                  className={`text-sm font-semibold whitespace-nowrap ${
+                    compacto ? "max-[420px]:hidden" : ""
+                  }`}
+                >
+                  {label}
+                </span>
+              )}
               {bloqueado && (
                 <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-rojo text-white flex items-center justify-center">
                   <Lock className="h-2.5 w-2.5" strokeWidth={3} />
