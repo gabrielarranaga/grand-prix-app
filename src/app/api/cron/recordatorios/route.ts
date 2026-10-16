@@ -37,7 +37,7 @@ function formatearHora(hora: string) {
 }
 
 function construirMensaje(r: Recordatorio) {
-  const lugar = r.punto_encuentro_texto ?? "Av. Lima 554, San Miguel";
+  const lugar = r.punto_encuentro_texto ?? "Dean Saavedra 246, San Miguel";
   const link = r.punto_encuentro_maps_link ? ` (${r.punto_encuentro_maps_link})` : "";
   const instructor = r.instructor_nombre ?? "tu instructor de siempre";
   return (
