@@ -101,3 +101,32 @@ export async function asignarProfesorHorario(formData: FormData) {
   revalidatePath("/admin/horarios");
   revalidatePath("/profesor");
 }
+
+// Emergencia de ultimo momento (del alumno o del instructor): la clase se
+// cancela, el cupo queda libre al instante y la clase no se le cuenta al
+// alumno (fix-22).
+export async function cancelarClasePorEmergencia(
+  reservaId: string,
+  _prevState: BloqueoFormState,
+  formData: FormData,
+): Promise<BloqueoFormState> {
+  await requireProfile("admin");
+
+  const motivo = String(formData.get("motivo") ?? "");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_cancelar_clase", {
+    p_reserva_id: reservaId,
+    p_motivo: motivo,
+  });
+
+  if (error) {
+    return { error: error.message.replace(/^.*: /, "") };
+  }
+
+  revalidatePath("/admin/horarios");
+  revalidatePath("/admin");
+  revalidatePath("/alumno/horarios");
+  revalidatePath("/alumno/agenda");
+  revalidatePath("/profesor");
+  return { error: null };
+}

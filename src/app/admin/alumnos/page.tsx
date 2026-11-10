@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { TitleAccent } from "@/components/title-accent";
+import { PageHeader } from "@/components/page-header";
 import { hora12 } from "@/lib/horarios";
 import { ResetPinForm } from "./reset-pin-form";
 import { LiberarNoShowButton } from "./liberar-no-show-button";
@@ -48,24 +48,24 @@ export default async function AlumnosPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-grafito">Alumnos</h1>
-        <TitleAccent className="w-10 h-1 mt-2" />
-        <p className="text-grafito/60 mt-2">
-          Si un alumno se olvida su PIN, resetéaselo aquí y avísale el nuevo por WhatsApp. Una
-          inasistencia consume la clase de su paquete por defecto — si estuvo justificada, puedes
-          perdonarla aquí abajo para liberarle el cupo.
-        </p>
-      </div>
+      <PageHeader
+        etiqueta="Gestión"
+        titulo={
+          <>
+            Tus <em>alumnos</em>
+          </>
+        }
+        bajada="Si un alumno se olvida su PIN, resetéaselo aquí y avísale el nuevo por WhatsApp. Una inasistencia consume la clase de su paquete por defecto — si estuvo justificada, puedes perdonarla aquí abajo para liberarle el cupo."
+      />
 
       {!alumnos || alumnos.length === 0 ? (
         <p className="text-sm text-grafito/60">Todavía no hay alumnos registrados.</p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {alumnos.map((a) => {
             const inasistencias = noShowsPorAlumno.get(a.id) ?? [];
             return (
-              <div key={a.id} className="glass rounded-xl p-4 space-y-3">
+              <div key={a.id} className="glass rounded-2xl p-5 space-y-3 card-lift">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-4 flex-wrap">
                     <span className="text-sm font-semibold text-grafito">{a.nombre}</span>
@@ -76,7 +76,7 @@ export default async function AlumnosPage() {
 
                 {inasistencias.length > 0 && (
                   <div className="pt-3 border-t border-grafito/10 space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-grafito/40">
+                    <p className="font-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-rojo">
                       Inasistencias sin perdonar
                     </p>
                     {inasistencias.map((r) => (

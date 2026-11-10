@@ -3,6 +3,7 @@ import { instanteLima, ahora } from "@/lib/fecha";
 import { hora12 } from "@/lib/horarios";
 import { tieneAccesoAHorarios } from "@/lib/acceso";
 import { AccesoBloqueado } from "@/components/acceso-bloqueado";
+import { PageHeader } from "@/components/page-header";
 import { GoogleReviewCard } from "@/components/google-review-card";
 import { CancelarButton } from "./cancelar-button";
 
@@ -27,11 +28,11 @@ const ETIQUETA_ESTADO: Record<string, string> = {
 };
 
 const ESTILO_ESTADO: Record<string, string> = {
-  confirmada: "bg-rojo/10 text-rojo",
-  cancelada: "bg-grafito/5 text-grafito/40",
-  completada: "bg-grafito/10 text-grafito",
-  no_show: "bg-rojo/10 text-rojo",
-  profesor_no_asistio: "bg-grafito/5 text-grafito/50",
+  confirmada: "bg-rojo/10 text-rojo-oscuro",
+  cancelada: "bg-grafito/5 text-grafito/55",
+  completada: "bg-green-600/12 text-green-800",
+  no_show: "bg-rojo/10 text-rojo-oscuro",
+  profesor_no_asistio: "bg-grafito/5 text-grafito/65",
 };
 
 function formatearFecha(fecha: string) {
@@ -83,27 +84,30 @@ export default async function AgendaAlumnoPage() {
 
   return (
     <div className="space-y-10">
-      <div>
-        <h1 className="font-display text-2xl font-semibold text-grafito">Mi agenda</h1>
-        <p className="text-grafito/60 mt-1">
-          Puedes cancelar una clase hasta 4 horas antes de que empiece.
-        </p>
-      </div>
+      <PageHeader
+        etiqueta="Tus clases"
+        titulo={
+          <>
+            Mi <em>agenda</em>
+          </>
+        }
+        bajada="Puedes cancelar una clase hasta 4 horas antes de que empiece."
+      />
 
       {tieneClasesCompletadas && <GoogleReviewCard />}
 
       <section>
-        <h2 className="font-display text-lg font-semibold text-grafito mb-4">
-          Próximas clases ({proximas.length})
+        <h2 className="font-display text-xl font-extrabold tracking-[-0.02em] text-grafito mb-4">
+          Próximas clases <span className="font-mono text-sm font-bold text-rojo align-middle ml-1">{String(proximas.length).padStart(2, "0")}</span>
         </h2>
         {proximas.length === 0 ? (
           <p className="text-sm text-grafito/60">No tienes clases próximas reservadas.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {proximas.map((r) => (
               <div
                 key={r.id}
-                className="glass rounded-xl p-4 flex items-center justify-between gap-4"
+                className="glass rounded-2xl p-5 flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-4 flex-wrap">
                   <span className="text-sm font-semibold text-grafito">
@@ -124,15 +128,15 @@ export default async function AgendaAlumnoPage() {
       </section>
 
       <section>
-        <h2 className="font-display text-lg font-semibold text-grafito mb-4">Historial</h2>
+        <h2 className="font-display text-xl font-extrabold tracking-[-0.02em] text-grafito mb-4">Historial</h2>
         {historial.length === 0 ? (
           <p className="text-sm text-grafito/60">Todavía no tienes clases pasadas.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {historial.map((r) => (
               <div
                 key={r.id}
-                className="glass rounded-xl p-4 flex items-center justify-between gap-4"
+                className="glass rounded-2xl p-5 flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-4 flex-wrap">
                   <span className="text-sm font-semibold text-grafito">
@@ -148,9 +152,11 @@ export default async function AgendaAlumnoPage() {
                   </span>
                 </div>
                 <span
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-full ${ESTILO_ESTADO[r.estado]}`}
+                  className={`text-xs font-semibold px-2.5 py-1.5 rounded-md ${
+                    r.estado === "confirmada" ? "bg-grafito/10 text-grafito/70" : ESTILO_ESTADO[r.estado]
+                  }`}
                 >
-                  {ETIQUETA_ESTADO[r.estado]}
+                  {r.estado === "confirmada" ? "Pendiente de registro" : ETIQUETA_ESTADO[r.estado]}
                 </span>
               </div>
             ))}

@@ -65,6 +65,7 @@ export async function crearMovimiento(
   if (error) return { error: "No se pudo guardar. Revisa los datos e intenta de nuevo." };
 
   revalidatePath("/admin/finanzas");
+  revalidatePath("/admin");
   return { error: null, ok: true };
 }
 
@@ -86,6 +87,7 @@ export async function editarMovimiento(
   if (error) return { error: "No se pudo guardar. Revisa los datos e intenta de nuevo." };
 
   revalidatePath("/admin/finanzas");
+  revalidatePath("/admin");
   return { error: null, ok: true };
 }
 

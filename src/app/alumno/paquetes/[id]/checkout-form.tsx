@@ -10,7 +10,12 @@ const METODOS = [
   { value: "yape", label: "Yape", icono: Smartphone },
   { value: "plin", label: "Plin", icono: Smartphone },
   { value: "tarjeta", label: "Tarjeta", icono: CreditCard },
-  { value: "efectivo", label: "Efectivo en la oficina", icono: Wallet },
+  {
+    value: "efectivo",
+    label: "Efectivo en la oficina",
+    detalle: "Dean Saavedra 246, San Miguel",
+    icono: Wallet,
+  },
 ];
 
 const MODALIDADES = [
@@ -33,7 +38,7 @@ export function CheckoutForm({ paqueteId }: { paqueteId: string }) {
       <div>
         <p className="text-sm font-medium text-grafito mb-3">¿Cómo prefieres pagar?</p>
         <div className="grid grid-cols-2 gap-3">
-          {METODOS.map(({ value, label, icono: Icono }) => (
+          {METODOS.map(({ value, label, detalle, icono: Icono }) => (
             <label
               key={value}
               className={`flex items-center gap-2.5 rounded-xl border px-4 py-3 cursor-pointer transition-colors ${
@@ -52,7 +57,12 @@ export function CheckoutForm({ paqueteId }: { paqueteId: string }) {
                 className="sr-only"
               />
               <Icono className="h-5 w-5 shrink-0" />
-              <span className="text-sm font-medium">{label}</span>
+              <span className="text-sm font-medium">
+                {label}
+                {detalle && (
+                  <span className="block text-xs font-normal text-grafito/60 mt-0.5">{detalle}</span>
+                )}
+              </span>
             </label>
           ))}
         </div>
@@ -93,8 +103,9 @@ export function CheckoutForm({ paqueteId }: { paqueteId: string }) {
       </div>
 
       <p className="text-xs text-grafito/50 leading-relaxed">
-        No se procesa ningún cobro desde la app. Al confirmar, te llevamos a WhatsApp con un
-        mensaje ya armado para cerrar el pago directamente con nosotros.
+        {metodo === "efectivo" || metodo === "tarjeta"
+          ? "Al confirmar, te llevamos a WhatsApp con un mensaje ya armado para coordinar el pago."
+          : "Al confirmar, te mostramos el número de Yape/Plin y subes la captura de tu pago."}
       </p>
 
       {state.error && <p className="text-sm text-rojo">{state.error}</p>}
@@ -104,7 +115,11 @@ export function CheckoutForm({ paqueteId }: { paqueteId: string }) {
         disabled={pending}
         className="w-full sm:w-auto glow-rojo rounded-full bg-rojo hover:bg-rojo-oscuro text-white font-semibold px-7 py-3 transition-colors disabled:opacity-60"
       >
-        {pending ? "Abriendo WhatsApp..." : "Continuar por WhatsApp"}
+        {pending
+          ? "Un momento..."
+          : metodo === "efectivo" || metodo === "tarjeta"
+            ? "Continuar por WhatsApp"
+            : "Continuar al pago"}
       </button>
     </form>
   );

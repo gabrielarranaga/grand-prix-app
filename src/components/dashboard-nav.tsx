@@ -51,7 +51,7 @@ export function DashboardNav({ items }: { items: NavItem[] }) {
       className="fixed inset-x-0 z-20 flex justify-center px-4 pointer-events-none"
       style={{ bottom: "calc(1.25rem + env(safe-area-inset-bottom))" }}
     >
-      <div className="glass pointer-events-auto rounded-full p-1.5 flex items-center gap-1">
+      <div className="pointer-events-auto rounded-2xl bg-ink/95 backdrop-blur-md p-1.5 flex items-center gap-1 shadow-[0_30px_60px_-20px_rgba(27,24,22,0.6)] ring-1 ring-white/10">
         {items.map(({ href, label, icon, bloqueado }) => {
           const Icon = ICONOS[icon];
           const externo = href.startsWith("http");
@@ -67,12 +67,13 @@ export function DashboardNav({ items }: { items: NavItem[] }) {
               target={externo ? "_blank" : undefined}
               rel={externo ? "noopener noreferrer" : undefined}
               aria-label={bloqueado ? `${label} (bloqueado)` : label}
-              className={`btn-press relative flex items-center justify-center h-12 rounded-full transition-[width] ${
+              aria-current={activo ? "page" : undefined}
+              className={`btn-press relative flex items-center justify-center h-12 rounded-xl transition-[width,background-color,color] ${
                 activo
-                  ? `w-auto px-4 gap-2 bg-rojo text-white shadow-md shadow-rojo/30 ${
+                  ? `w-auto px-4 gap-2 bg-rojo text-white ${
                       compacto ? "max-[420px]:w-12 max-[420px]:px-0" : ""
                     }`
-                  : "w-12 text-grafito/50 hover:text-rojo hover:bg-rojo/5"
+                  : "w-12 text-white/55 hover:text-white hover:bg-white/10"
               }`}
             >
               <Icon className="h-5 w-5 shrink-0" strokeWidth={activo ? 2.25 : 2} />
@@ -86,7 +87,7 @@ export function DashboardNav({ items }: { items: NavItem[] }) {
                 </span>
               )}
               {bloqueado && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-rojo text-white flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-rojo text-white ring-2 ring-ink flex items-center justify-center">
                   <Lock className="h-2.5 w-2.5" strokeWidth={3} />
                 </span>
               )}

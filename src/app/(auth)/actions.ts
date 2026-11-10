@@ -4,8 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Rol } from "@/lib/types";
+import { ORIGENES_ALUMNO } from "@/lib/origenes";
 
 export type AuthState = { error: string | null };
+
+// Valores de "¿Como nos conociste?" (se guardan en profiles.origen). La
+// lista visible esta en lib/origenes.ts; esto valida lo que llega.
+const ORIGENES = ORIGENES_ALUMNO.map((o) => o.valor) as string[];
 
 async function rutaPorRol(rol: Rol | undefined) {
   if (rol === "admin") return "/admin";
@@ -38,6 +43,7 @@ export async function registrarAlumno(
   const apellido = String(formData.get("apellido") ?? "").trim();
   const telefono = sanitizarTelefono(String(formData.get("telefono") ?? ""));
   const pin = String(formData.get("pin") ?? "");
+  const origen = String(formData.get("origen") ?? "");
 
   if (!nombre || !apellido) {
     return { error: "Completa tu nombre y apellido." };
@@ -48,13 +54,16 @@ export async function registrarAlumno(
   if (!/^\d{6}$/.test(pin)) {
     return { error: "El PIN debe tener exactamente 6 dígitos." };
   }
+  if (!ORIGENES.includes(origen)) {
+    return { error: "Cuéntanos cómo nos conociste." };
+  }
 
   const nombreCompleto = `${nombre} ${apellido}`;
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email: emailInternoDesdeTelefono(telefono),
     password: pin,
-    options: { data: { nombre: nombreCompleto, telefono, rol: "alumno" } },
+    options: { data: { nombre: nombreCompleto, telefono, rol: "alumno", origen } },
   });
 
   if (error) {

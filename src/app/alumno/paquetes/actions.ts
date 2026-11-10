@@ -82,6 +82,12 @@ export async function elegirPaquete(
     return { error: error.message };
   }
 
+  // Yape/Plin se paga dentro de la app (captura + aprobacion del admin);
+  // efectivo y tarjeta todavia se coordinan por WhatsApp.
+  if (metodoPago === "yape" || metodoPago === "plin") {
+    redirect("/alumno/pago");
+  }
+
   const etiquetaMetodo = ETIQUETA_METODO[metodoPago] ?? metodoPago;
   const etiquetaModalidad = ETIQUETA_MODALIDAD[modalidadPago] ?? modalidadPago;
   const mensaje = encodeURIComponent(

@@ -3,7 +3,7 @@ import { ArrowDownRight, ArrowUpRight, Minus, Tags } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { fechaLima } from "@/lib/fecha";
-import { TitleAccent } from "@/components/title-accent";
+import { PageHeader } from "@/components/page-header";
 import {
   esMesValido,
   mesActual,
@@ -20,6 +20,7 @@ import { SelectorMes } from "./selector-mes";
 import { GraficoHistorico, type PuntoHistorico } from "./grafico-historico";
 import { MovimientoForm } from "./movimiento-form";
 import { MovimientoFila } from "./movimiento-fila";
+import { GastoRapido } from "./gasto-rapido";
 
 const MESES_HISTORICO = 12;
 
@@ -99,15 +100,25 @@ export default async function FinanzasPage({
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-grafito">Finanzas</h1>
-          <TitleAccent className="w-10 h-1 mt-2" />
-          <p className="text-grafito/60 mt-1">Lo que entra y lo que sale, mes a mes.</p>
-        </div>
+        <PageHeader
+          etiqueta="Dinero"
+          titulo={
+            <>
+              <em>Finanzas</em> del negocio
+            </>
+          }
+          bajada="Lo que entra y lo que sale, mes a mes."
+        />
         <SelectorMes mes={mes} opciones={opcionesMes} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <section id="gasto" className="glass corte-asimetrico-sm p-5 sm:p-6">
+        <h2 className="font-display text-xl font-extrabold tracking-[-0.02em] text-grafito mb-1">+ Anotar un gasto</h2>
+        <p className="text-sm text-grafito/60 mb-4">De hoy. Los pagos de alumnos se anotan solos.</p>
+        <GastoRapido categorias={categorias ?? []} hoy={hoy} />
+      </section>
+
+      <dl className="grid grid-cols-1 sm:grid-cols-3 rounded-2xl bg-ink text-white overflow-hidden">
         <Kpi titulo="Ingresos" monto={ingresos} cambio={variacion(ingresos, ingresosAnt)} subirEsBueno />
         <Kpi titulo="Egresos" monto={egresos} cambio={variacion(egresos, egresosAnt)} subirEsBueno={false} />
         <Kpi
@@ -115,15 +126,14 @@ export default async function FinanzasPage({
           monto={utilidad}
           cambio={variacion(utilidad, utilidadAnt)}
           subirEsBueno
-          destacado
         />
-      </div>
-      <p className="-mt-5 text-xs text-grafito/45">
+      </dl>
+      <p className="-mt-5 text-xs text-grafito/60">
         Comparado con {nombreMes(mesAnterior).toLowerCase()}.
       </p>
 
       <section className="glass corte-asimetrico-sm p-5 sm:p-6">
-        <h2 className="font-display text-lg font-semibold text-grafito mb-4">Últimos 12 meses</h2>
+        <h2 className="font-display text-xl font-extrabold tracking-[-0.02em] text-grafito mb-4">Últimos 12 meses</h2>
         {hayDatos ? (
           <GraficoHistorico puntos={historico} />
         ) : (
@@ -141,7 +151,7 @@ export default async function FinanzasPage({
 
       <section className="glass corte-asimetrico-sm p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <h2 className="font-display text-lg font-semibold text-grafito">Registrar movimiento</h2>
+          <h2 className="font-display text-xl font-extrabold tracking-[-0.02em] text-grafito">Registrar movimiento</h2>
           <Link
             href="/admin/finanzas/categorias"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-grafito/60 hover:text-rojo"
@@ -157,7 +167,7 @@ export default async function FinanzasPage({
       </section>
 
       <section className="glass corte-asimetrico-sm p-5 sm:p-6">
-        <h2 className="font-display text-lg font-semibold text-grafito">
+        <h2 className="font-display text-xl font-extrabold tracking-[-0.02em] text-grafito">
           Movimientos de {nombreMes(mes).toLowerCase()}
         </h2>
         {movimientos && movimientos.length > 0 ? (
@@ -185,15 +195,13 @@ function Kpi({
   monto,
   cambio,
   subirEsBueno,
-  destacado = false,
 }: {
   titulo: string;
   monto: number;
   cambio: number | null;
   subirEsBueno: boolean;
-  destacado?: boolean;
 }) {
-  let indicador = <span className="text-grafito/45">Sin mes anterior para comparar</span>;
+  let indicador = <span className="text-white/55">Sin mes anterior para comparar</span>;
   if (cambio !== null) {
     const redondeado = Math.round(cambio);
     const Icono = redondeado > 0 ? ArrowUpRight : redondeado < 0 ? ArrowDownRight : Minus;
@@ -201,7 +209,7 @@ function Kpi({
     indicador = (
       <span
         className={`inline-flex items-center gap-1 font-semibold ${
-          bueno === null ? "text-grafito/55" : bueno ? "text-green-700" : "text-rojo"
+          bueno === null ? "text-white/60" : bueno ? "text-green-400" : "text-red-400"
         }`}
       >
         <Icono className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -212,16 +220,16 @@ function Kpi({
   }
 
   return (
-    <div className={`glass corte-asimetrico-sm p-5 ${destacado ? "ring-1 ring-rojo/20" : ""}`}>
-      <p className="text-sm text-grafito/60">{titulo}</p>
-      <p
-        className={`font-display text-3xl font-semibold mt-1 tabular-nums ${
-          destacado && monto < 0 ? "text-rojo" : "text-grafito"
+    <div className="relative px-6 pt-8 pb-7 before:absolute before:left-6 before:right-6 before:top-0 before:h-[3px] before:bg-rojo max-sm:border-t first:max-sm:border-t-0 sm:border-l first:sm:border-l-0 border-white/10">
+      <dt className="text-[13.5px] text-white/60">{titulo}</dt>
+      <dd
+        className={`font-display text-[2.4rem] sm:text-[2.2rem] lg:text-[2.7rem] font-extrabold leading-none tracking-[-0.045em] tabular-nums mt-2.5 ${
+          monto < 0 ? "text-red-400" : ""
         }`}
       >
         {soles(monto)}
-      </p>
-      <p className="text-xs mt-2">{indicador}</p>
+      </dd>
+      <p className="text-xs mt-3">{indicador}</p>
     </div>
   );
 }
@@ -239,7 +247,7 @@ function Desglose({
 }) {
   return (
     <section className="glass corte-asimetrico-sm p-5 sm:p-6">
-      <h2 className="font-display text-base font-semibold text-grafito mb-4">{titulo}</h2>
+      <h2 className="font-display text-lg font-extrabold tracking-[-0.02em] text-grafito mb-4">{titulo}</h2>
       {filas.length === 0 ? (
         <p className="text-sm text-grafito/55">Nada registrado este mes.</p>
       ) : (

@@ -4,7 +4,6 @@ import { ArrowUpRight, Check, CheckCircle2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Paquete } from "@/lib/types";
 import { subtituloPaquete, ticksPaquete } from "@/lib/paquetes";
-import { TitleAccent } from "@/components/title-accent";
 import { CancelarCompraButton } from "./cancelar-compra-button";
 
 export default async function PaquetesPage() {
@@ -26,30 +25,30 @@ export default async function PaquetesPage() {
 
   return (
     <div className="space-y-10">
-      <div className="animate-in corte-asimetrico relative overflow-hidden h-56 sm:h-64 max-sm:landscape:h-40">
+      <div className="animate-in corte-asimetrico relative overflow-hidden h-56 sm:h-64 max-sm:landscape:h-40 bg-ink isolate">
         <Image
-          src="/flota-vino.jpg"
-          alt="Instructor de Grand Prix junto al vehículo de instrucción"
+          src="/paquetes-costa.webp"
+          alt="Auto rosado de Grand Prix recorriendo la Costa Verde"
           fill
           priority
           quality={90}
-          className="object-cover object-[33%_25%]"
+          className="object-cover object-[62%_60%] -z-20"
           sizes="(min-width: 1024px) 800px, 100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/55 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-6">
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mt-2 tracking-tight">
-            Elige tu paquete
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/60 to-ink/10" />
+        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+          <p className="tag tag-claro">Paquetes y diferenciales</p>
+          <h1 className="titular text-[2rem] sm:text-[2.6rem] text-white !leading-[1] !tracking-[-0.045em] mt-3">
+            Elige tu <em>paquete</em>
           </h1>
-          <TitleAccent className="w-10 h-1 mt-2" />
-          <p className="text-white/80 text-sm mt-2 max-w-sm">
+          <p className="text-white/70 text-sm mt-2.5 max-w-sm">
             Practica al volante con nuestra flota, a tu ritmo.
           </p>
         </div>
       </div>
 
       {compraActiva && (
-        <div className="animate-in rounded-xl bg-rojo/10 border border-rojo/20 text-rojo px-4 py-3 text-sm font-medium">
+        <div className="animate-in rounded-xl bg-white border border-rojo/40 border-l-4 border-l-rojo text-grafito px-4 py-3.5 text-sm font-medium">
           <p>
             Ya tienes el paquete <strong>{compraActiva.paquete?.nombre ?? ""}</strong> activo. Solo
             se puede tener uno a la vez.{" "}
@@ -69,18 +68,18 @@ export default async function PaquetesPage() {
             key={p.id}
             className={`animate-in card-lift group ${
               p.destacado
-                ? "glass-rojo corte-asimetrico relative lg:-translate-y-2 text-white p-6 pt-8 flex flex-col h-full"
+                ? "glass-rojo corte-asimetrico-sm relative lg:-translate-y-2 text-white p-6 pt-9 flex flex-col h-full"
                 : "glass corte-asimetrico-sm p-6 flex flex-col h-full"
             }`}
             style={{ "--delay": `${i * 70}ms` } as React.CSSProperties}
           >
             {p.destacado && (
-              <span className="absolute -top-3 right-6 bg-white text-rojo text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1.5 rounded-full shadow-md">
-                Recomendado
+              <span className="absolute -top-3.5 right-5 bg-rojo text-white font-mono text-[10.5px] font-bold uppercase tracking-[0.12em] px-3 py-2 rounded-md shadow-md">
+                ★ Recomendado
               </span>
             )}
-            <h3 className="font-display text-xl font-bold tracking-tight">{p.nombre}</h3>
-            <p className="font-display text-4xl font-bold mt-3 tracking-tight">
+            <h3 className="font-display text-[25px] font-extrabold leading-[1.1] tracking-[-0.03em]">{p.nombre}</h3>
+            <p className="font-display text-[2.6rem] font-extrabold leading-none mt-4 tracking-[-0.05em] tabular-nums">
               S/ {p.precio.toLocaleString("es-PE")}
             </p>
             <p
@@ -102,7 +101,7 @@ export default async function PaquetesPage() {
               {ticksPaquete(p).map((c) => (
                 <li key={c} className="flex gap-2">
                   {p.destacado ? (
-                    <CheckCircle2 className="h-4 w-4 text-white/70 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 text-rojo shrink-0 mt-0.5" />
                   ) : (
                     <Check className="h-4 w-4 text-rojo shrink-0 mt-0.5" />
                   )}
@@ -114,8 +113,8 @@ export default async function PaquetesPage() {
               href={`/alumno/paquetes/${p.id}`}
               className={
                 p.destacado
-                  ? "btn-press mt-7 inline-flex items-center justify-center gap-2 bg-white text-rojo font-semibold px-5 py-3 rounded-full shadow-lg text-center"
-                  : "btn-press glow-rojo mt-7 inline-flex items-center justify-center gap-2 bg-rojo text-white font-semibold px-5 py-3 rounded-full text-center"
+                  ? "btn-press glow-rojo mt-7 inline-flex items-center justify-center gap-2 bg-rojo hover:bg-rojo-oscuro text-white font-bold h-[50px] px-5 rounded-[10px] text-center text-sm"
+                  : "btn-press mt-7 inline-flex items-center justify-center gap-2 border-[1.5px] border-grafito/[0.13] text-grafito font-bold h-[50px] px-5 rounded-[10px] text-center text-sm hover:bg-grafito hover:text-white hover:border-grafito"
               }
             >
               Elegir este paquete

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { TitleAccent } from "@/components/title-accent";
+import { PageHeader } from "@/components/page-header";
 import type { CategoriaFinanciera, TipoMovimiento } from "@/lib/finanzas";
 import { CategoriaFila, NuevaCategoriaForm } from "./categoria-forms";
 
@@ -29,17 +29,21 @@ export default async function CategoriasPage() {
           <ArrowLeft className="h-4 w-4" />
           Volver a Finanzas
         </Link>
-        <h1 className="font-display text-2xl font-bold text-grafito">Categorías</h1>
-        <TitleAccent className="w-10 h-1 mt-2" />
-        <p className="text-grafito/60 mt-1">
-          Las opciones que aparecen al registrar un ingreso o un egreso.
-        </p>
+        <PageHeader
+          etiqueta="Finanzas"
+          titulo={
+            <>
+              Tus <em>categorías</em>
+            </>
+          }
+          bajada="Las opciones que aparecen al registrar un ingreso o un egreso."
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {(["ingreso", "egreso"] as TipoMovimiento[]).map((tipo) => (
           <section key={tipo} className="glass corte-asimetrico-sm p-5 sm:p-6">
-            <h2 className="font-display text-lg font-semibold text-grafito">
+            <h2 className="font-display text-xl font-extrabold tracking-[-0.02em] text-grafito">
               {tipo === "ingreso" ? "Ingresos" : "Egresos"}
             </h2>
             <ul className="divide-y divide-grafito/10 mt-2">

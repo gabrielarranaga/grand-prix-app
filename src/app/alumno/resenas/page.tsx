@@ -1,27 +1,26 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
-import { TitleAccent } from "@/components/title-accent";
 import { LINK_RESENA_GOOGLE } from "@/lib/enlaces";
 
 export default function ResenasPage() {
   return (
     <div className="space-y-6">
-      <div className="animate-in corte-asimetrico relative overflow-hidden h-56 sm:h-64 max-sm:landscape:h-40">
+      <div className="animate-in corte-asimetrico relative overflow-hidden h-56 sm:h-64 max-sm:landscape:h-40 bg-ink isolate">
         <Image
           src="/resenas-hero.jpg"
           alt="Alumno feliz con su experiencia en Grand Prix"
           fill
           priority
           quality={90}
-          className="object-cover object-[58%_26%]"
+          className="object-cover object-[58%_26%] -z-20"
           sizes="(min-width: 1024px) 800px, 100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-vino-oscuro/90 via-vino/50 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-6">
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            ¿Te gustó tu experiencia?
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/55 to-ink/10" />
+        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+          <p className="tag tag-claro">Reseñas de Google</p>
+          <h1 className="titular text-[2rem] sm:text-[2.6rem] text-white !leading-[1] !tracking-[-0.045em] mt-3">
+            ¿Te gustó tu <em>experiencia</em>?
           </h1>
-          <TitleAccent className="w-10 h-1 mt-2" />
         </div>
       </div>
 

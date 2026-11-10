@@ -26,5 +26,5 @@ export async function reservarClase(
     return { error: error.message.replace(/^.*: /, "") };
   }
 
-  redirect("/alumno/horarios?reservado=1");
+  redirect(`/alumno/horarios?reservado=1&dia=${fecha}`);
 }

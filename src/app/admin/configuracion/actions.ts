@@ -14,6 +14,12 @@ export async function guardarConfiguracion(
 
   const puntoEncuentroTexto = String(formData.get("punto_encuentro_texto") ?? "").trim();
   const puntoEncuentroMapsLink = String(formData.get("punto_encuentro_maps_link") ?? "").trim();
+  const yapeNumero = String(formData.get("yape_numero") ?? "").replace(/D/g, "");
+  const yapeTitular = String(formData.get("yape_titular") ?? "").trim();
+
+  if (yapeNumero && yapeNumero.length !== 9) {
+    return { error: "El número de Yape debe tener 9 dígitos." };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -21,6 +27,8 @@ export async function guardarConfiguracion(
     .update({
       punto_encuentro_texto: puntoEncuentroTexto || null,
       punto_encuentro_maps_link: puntoEncuentroMapsLink || null,
+      yape_numero: yapeNumero || null,
+      yape_titular: yapeTitular || null,
     })
     .eq("id", true);
 

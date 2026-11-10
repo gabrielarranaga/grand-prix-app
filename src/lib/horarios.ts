@@ -1,4 +1,4 @@
-import { fechaLima } from "@/lib/fecha";
+import { fechaLima, instanteLima, ahora } from "@/lib/fecha";
 
 // Franjas horarias fijas del negocio (bloques de 2h): siempre las mismas,
 // Lun-Sab. El cronograma del alumno y el del admin arman sus filas a partir
@@ -22,6 +22,10 @@ export function hora12(hora24: string) {
   return `${h12}:${m} ${sufijo}`;
 }
 
+// Clases que se pueden dar a la vez en una misma franja: una por auto e
+// instructor. Debe coincidir con cupos_por_franja() en la base (fix-21).
+export const CUPOS_POR_FRANJA = 2;
+
 export const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"] as const;
 
 // Fecha (YYYY-MM-DD) del lunes de "hoy + offsetSemanas semanas", en hora Lima.
@@ -33,6 +37,17 @@ function lunesDeLaSemana(offsetSemanas: number) {
   const diffALunes = diaSemana === 0 ? -6 : 1 - diaSemana;
   base.setUTCDate(base.getUTCDate() + diffALunes + offsetSemanas * 7);
   return base;
+}
+
+// Cuantas semanas hay entre la semana de hoy y la semana de una fecha
+// (YYYY-MM-DD), para abrir el cronograma directo en el dia pedido.
+export function offsetSemanaDe(fechaISO: string) {
+  const [y, m, d] = fechaISO.split("-").map(Number);
+  const base = new Date(Date.UTC(y, m - 1, d));
+  const diaSemana = base.getUTCDay();
+  base.setUTCDate(base.getUTCDate() + (diaSemana === 0 ? -6 : 1 - diaSemana));
+  const semanas = Math.round((base.getTime() - lunesDeLaSemana(0).getTime()) / (7 * 24 * 60 * 60 * 1000));
+  return Math.max(0, semanas);
 }
 
 function toISO(fecha: Date) {
@@ -53,4 +68,11 @@ export function diasDeLaSemana(offsetSemanas: number) {
     fecha.setUTCDate(lunes.getUTCDate() + i);
     return { label, fecha, iso: toISO(fecha) };
   });
+}
+
+// Un cupo "pasado" es uno que ya empezo (hora de Lima): no se puede reservar,
+// asignar ni bloquear. La base de datos aplica la misma regla (fix-20); esto
+// es para que la pantalla lo muestre apagado en vez de ofrecerlo.
+export function cupoPasado(fechaISO: string, horaInicio: string) {
+  return instanteLima(fechaISO, horaInicio.slice(0, 5)).getTime() <= ahora();
 }

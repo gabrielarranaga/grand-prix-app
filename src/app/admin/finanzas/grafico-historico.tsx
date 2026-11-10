@@ -147,7 +147,7 @@ export function GraficoHistorico({ puntos }: { puntos: PuntoHistorico[] }) {
                     cy={y(p[s.clave])}
                     r={4.5}
                     fill={s.color}
-                    stroke="#faf9f8"
+                    stroke="#ffffff"
                     strokeWidth={2}
                   />
                 ) : null,

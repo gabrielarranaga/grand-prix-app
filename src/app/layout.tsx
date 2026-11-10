@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Bricolage_Grotesque } from "next/font/google";
+import { Inter, Bricolage_Grotesque, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,6 +16,13 @@ const bricolage = Bricolage_Grotesque({
   weight: ["600", "700", "800"],
 });
 
+// Etiquetas tipo "01 · PAGOS", igual que en la landing.
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets: ["latin"],
+  weight: ["500", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Grand Prix - Panel de gestión",
   description: "Reservas de clases, agendas y administración de Escuela de Manejo Grand Prix.",
@@ -25,22 +32,16 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#faf9f8",
+  themeColor: "#1b1816",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es-PE"
-      className={`${inter.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${inter.variable} ${bricolage.variable} ${jetbrains.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">
-        <div className="ambient-bg" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
         {children}
       </body>
     </html>
