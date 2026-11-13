@@ -191,11 +191,21 @@ export default async function ProfesorPage() {
                     </span>
                     <span className="text-sm text-grafito/70">{r.alumno?.nombre ?? "—"}</span>
                   </div>
-                  <span
-                    className={`text-xs font-semibold px-2.5 py-1.5 rounded-md ${ESTILO_ESTADO[r.estado]}`}
-                  >
-                    {ETIQUETA_ESTADO[r.estado]}
-                  </span>
+                  <div className="flex flex-col items-end gap-2">
+                    <span
+                      className={`text-xs font-semibold px-2.5 py-1.5 rounded-md ${ESTILO_ESTADO[r.estado]}`}
+                    >
+                      {ETIQUETA_ESTADO[r.estado]}
+                    </span>
+                    <details className="text-right">
+                      <summary className="cursor-pointer text-xs font-semibold text-rojo underline list-none">
+                        Corregir
+                      </summary>
+                      <div className="mt-2">
+                        <MarcarBotones reservaId={r.id} horarioId={r.horario.id} />
+                      </div>
+                    </details>
+                  </div>
                 </div>
               ))}
             </div>

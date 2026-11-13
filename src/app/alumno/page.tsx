@@ -49,16 +49,6 @@ export default async function InicioPage() {
       .returns<Proxima[]>(),
   ]);
 
-  let comprobantePendiente = false;
-  if (compra && compra.estado !== "pagado") {
-    const { count } = await supabase
-      .from("comprobantes_pago")
-      .select("id", { count: "exact", head: true })
-      .eq("compra_id", compra.id)
-      .eq("estado", "pendiente");
-    comprobantePendiente = (count ?? 0) > 0;
-  }
-
   const avance = ((avanceData ?? []) as Avance[])[0] ?? { incluidas: 0, permitidas: 0, usadas: 0 };
   const instante = ahora();
   const proxima = (reservas ?? [])
@@ -74,15 +64,13 @@ export default async function InicioPage() {
   let siguiente: { texto: string; href: string; detalle: string };
   if (!compra) {
     siguiente = { texto: "Elegir mi paquete", href: "/alumno/paquetes", detalle: "Empieza eligiendo cuántas horas de práctica quieres." };
-  } else if (comprobantePendiente) {
-    siguiente = { texto: "Ver estado de mi pago", href: "/alumno/pago", detalle: "Estamos revisando tu comprobante. Te avisamos al confirmarlo." };
   } else if (!pagoHecho || faltaSegundoPago) {
     siguiente = {
       texto: faltaSegundoPago ? "Pagar el 50% restante" : "Pagar mi paquete",
       href: "/alumno/pago",
       detalle: faltaSegundoPago
         ? "Ya vas a mitad de curso. Completa tu pago para seguir reservando."
-        : "Paga con Yape o Plin y sube la captura. Así se desbloquean tus horarios.",
+        : "Coordina tu pago por WhatsApp. Apenas lo validemos, se desbloquean tus horarios.",
     };
   } else if (avance.usadas < avance.incluidas) {
     siguiente = { texto: "Reservar una clase", href: "/alumno/horarios", detalle: "Elige el día y la hora que te acomode." };
@@ -100,9 +88,7 @@ export default async function InicioPage() {
           ? "Completo"
           : compra?.estado === "parcial"
             ? "50% pagado"
-            : comprobantePendiente
-              ? "En revisión"
-              : "Pendiente",
+            : "Por pagar",
     },
     {
       titulo: "Clases",

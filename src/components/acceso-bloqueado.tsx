@@ -13,7 +13,7 @@ export function AccesoBloqueado({ seccion }: { seccion: string }) {
       </h1>
       <p className="text-sm text-grafito/65 mt-3 leading-relaxed">
         Para reservar clases necesitas haber pagado al menos el 50% de un paquete. Elige tu
-        paquete y paga con Yape o Plin desde la app.
+        paquete y coordina el pago por WhatsApp; apenas lo validemos, se desbloquea.
       </p>
       <Link
         href="/alumno"

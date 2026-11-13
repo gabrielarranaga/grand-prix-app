@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { hora12 } from "@/lib/horarios";
 import { reservarClase, type ReservaFormState } from "./actions";
 
@@ -19,6 +19,7 @@ export function SlotChip({
   esMia,
   pasado,
   puedeReservar,
+  motivoBloqueo,
 }: {
   fecha: string;
   etiquetaDia: string;
@@ -29,10 +30,18 @@ export function SlotChip({
   esMia: boolean;
   pasado: boolean;
   puedeReservar: boolean;
+  motivoBloqueo?: string;
 }) {
   const action = reservarClase.bind(null, fecha, horaInicio, horaFin);
   const [state, formAction, pending] = useActionState(action, initialState);
   const [confirmando, setConfirmando] = useState(false);
+  const panel = useRef<HTMLFormElement>(null);
+
+  // El panel de confirmacion se abre al fondo de la lista, justo donde queda
+  // la barra flotante: lo centramos para que el boton "Sí, reservar" se vea.
+  useEffect(() => {
+    if (confirmando) panel.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [confirmando]);
 
   const horaLabel = `${hora12(horaInicio)} – ${hora12(horaFin)}`;
 
@@ -63,7 +72,7 @@ export function SlotChip({
       <div className="rounded-xl border border-grafito/10 bg-white px-4 py-3.5">
         <p className="text-[15px] font-semibold text-grafito/60">{horaLabel}</p>
         <p className="font-mono text-[11px] font-bold text-grafito/45 mt-1 uppercase tracking-[0.1em]">
-          Libre
+          {motivoBloqueo ?? "Libre"}
         </p>
       </div>
     );
@@ -71,7 +80,7 @@ export function SlotChip({
 
   if (confirmando) {
     return (
-      <form action={formAction} className="rounded-xl border-2 border-rojo bg-white px-4 py-3.5">
+      <form ref={panel} action={formAction} className="rounded-xl border-2 border-rojo bg-white px-4 py-3.5 scroll-mb-32">
         <p className="text-sm text-grafito">
           ¿Reservas el <strong>{nombreDia} {etiquetaDia}</strong>, de{" "}
           <strong>{horaLabel}</strong>?

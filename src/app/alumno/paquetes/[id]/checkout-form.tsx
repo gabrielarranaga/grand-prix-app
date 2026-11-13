@@ -103,9 +103,8 @@ export function CheckoutForm({ paqueteId }: { paqueteId: string }) {
       </div>
 
       <p className="text-xs text-grafito/50 leading-relaxed">
-        {metodo === "efectivo" || metodo === "tarjeta"
-          ? "Al confirmar, te llevamos a WhatsApp con un mensaje ya armado para coordinar el pago."
-          : "Al confirmar, te mostramos el número de Yape/Plin y subes la captura de tu pago."}
+        Al confirmar, te llevamos a WhatsApp con un mensaje ya armado para coordinar el pago. Apenas
+        lo validemos, te liberamos los cupos para que reserves.
       </p>
 
       {state.error && <p className="text-sm text-rojo">{state.error}</p>}

@@ -140,11 +140,15 @@ export default async function HorariosPage({
               Completa tu segundo pago para seguir reservando las {avance.incluidas - avance.usadas}{" "}
               clases que te faltan.
             </p>
+            <p className="text-grafito/70 mt-2">
+              El pago se coordina por WhatsApp. Apenas lo validemos, te liberamos las clases que te
+              faltan para que las reserves.
+            </p>
             <Link
               href="/alumno/pago"
               className="btn-press inline-flex mt-3 items-center bg-rojo hover:bg-rojo-oscuro text-white font-semibold px-5 py-2.5 rounded-full"
             >
-              Pagar el 50% restante
+              Coordinar el pago por WhatsApp
             </Link>
           </div>
         </div>
@@ -225,6 +229,13 @@ export default async function HorariosPage({
               esMia={mias.has(clave)}
               pasado={cupoPasado(diaElegido.iso, f.inicio)}
               puedeReservar={puedeReservar}
+              motivoBloqueo={
+                faltaSegundoPago
+                  ? "Falta tu segundo pago"
+                  : avance.incluidas > 0
+                    ? "Ya usaste tus clases"
+                    : "Elige un paquete primero"
+              }
             />
           );
         })}

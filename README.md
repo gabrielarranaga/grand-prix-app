@@ -20,7 +20,7 @@ para desplegarse en **Vercel**.
       no-show.
 
 Roadmap después del MVP (no incluido todavía, ver el mega-prompt original): paquetes y precios,
-modalidad de clase (a domicilio / punto de encuentro), pagos integrados (Mercado Pago / Culqi).
+modalidad de clase (a domicilio / punto de encuentro), pagos registrados a mano por el admin (Yape / efectivo / tarjeta en la oficina).
 
 ## 1. Crear el proyecto en Supabase
 

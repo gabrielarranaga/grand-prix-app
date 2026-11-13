@@ -62,6 +62,16 @@ export default async function PaquetesPage() {
         </div>
       )}
 
+      {compraActiva && compraActiva.estado !== "pendiente" ? (
+        <div className="animate-in text-center py-6">
+          <Link
+            href="/alumno/horarios"
+            className="btn-press inline-flex items-center bg-rojo hover:bg-rojo-oscuro text-white font-semibold px-6 py-3 rounded-full"
+          >
+            Reservar mis clases
+          </Link>
+        </div>
+      ) : (
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
         {paquetes?.map((p, i) => (
           <div
@@ -123,6 +133,7 @@ export default async function PaquetesPage() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

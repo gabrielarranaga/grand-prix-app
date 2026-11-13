@@ -9,7 +9,8 @@ export default async function AlumnoLayout({ children }: { children: React.React
 
   const navItems: NavItem[] = [
     { href: "/alumno", label: "Inicio", icon: "home" },
-    { href: "/alumno/paquetes", label: "Paquetes", icon: "package" },
+    // Con el primer pago hecho ya no hay nada que elegir: la pestaña se va.
+    ...(acceso ? [] : [{ href: "/alumno/paquetes", label: "Paquetes", icon: "package" } as NavItem]),
     { href: "/alumno/horarios", label: "Horarios", icon: "calendar", bloqueado: !acceso },
     { href: "/alumno/agenda", label: "Mi agenda", icon: "clipboard", bloqueado: !acceso },
     { href: "/alumno/resenas", label: "Reseñas", icon: "star" },

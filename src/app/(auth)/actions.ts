@@ -1,5 +1,6 @@
 "use server";
 
+import { avisarTelegram } from "@/lib/telegram";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -73,6 +74,7 @@ export async function registrarAlumno(
     return { error: error.message };
   }
 
+  avisarTelegram(`👋 Alumno nuevo: ${nombreCompleto} (${telefono}), nos conoció por: ${origen}.`);
   redirect("/alumno");
 }
 

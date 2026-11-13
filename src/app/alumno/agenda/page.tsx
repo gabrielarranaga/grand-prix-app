@@ -4,7 +4,6 @@ import { hora12 } from "@/lib/horarios";
 import { tieneAccesoAHorarios } from "@/lib/acceso";
 import { AccesoBloqueado } from "@/components/acceso-bloqueado";
 import { PageHeader } from "@/components/page-header";
-import { GoogleReviewCard } from "@/components/google-review-card";
 import { CancelarButton } from "./cancelar-button";
 
 type ReservaConHorario = {
@@ -80,7 +79,6 @@ export default async function AgendaAlumnoPage() {
       ),
     );
 
-  const tieneClasesCompletadas = historial.some((r) => r.estado === "completada");
 
   return (
     <div className="space-y-10">
@@ -91,10 +89,9 @@ export default async function AgendaAlumnoPage() {
             Mi <em>agenda</em>
           </>
         }
-        bajada="Puedes cancelar una clase hasta 4 horas antes de que empiece."
+        bajada="Puedes cancelar una clase hasta 2 horas antes de que empiece."
       />
 
-      {tieneClasesCompletadas && <GoogleReviewCard />}
 
       <section>
         <h2 className="font-display text-xl font-extrabold tracking-[-0.02em] text-grafito mb-4">

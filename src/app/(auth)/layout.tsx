@@ -26,12 +26,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <main className="min-h-dvh flex flex-col">
       <div className="relative overflow-hidden bg-ink px-6 pt-8 pb-24 sm:px-10 sm:pt-12 sm:pb-32 isolate">
         <Image
-          src="/instructor-sonriendo.jpg"
+          src="/registro-alumna.jpg"
           alt=""
           fill
           priority
           quality={90}
-          className="object-cover object-[50%_38%] -z-20"
+          className="object-cover object-[72%_40%] -z-20"
           sizes="(min-width: 1024px) 1200px, 100vw"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-ink via-ink/85 to-ink/30" />

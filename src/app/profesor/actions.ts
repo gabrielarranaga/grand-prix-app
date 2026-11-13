@@ -17,6 +17,25 @@ export async function marcarClase(
 
   const supabase = await createClient();
 
+  // Corregir una marca: si antes fue "no pude asistir", el horario se libero y
+  // quizas otro alumno ya lo tomo; en ese caso no se puede revertir.
+  const { data: actual } = await supabase
+    .from("reservas")
+    .select("estado, horario:horarios_clase(estado)")
+    .eq("id", reservaId)
+    .maybeSingle<{ estado: string; horario: { estado: string } | null }>();
+
+  if (actual?.estado === "profesor_no_asistio" && resultado !== "profesor_no_asistio") {
+    const { count } = await supabase
+      .from("reservas")
+      .select("id", { count: "exact", head: true })
+      .eq("horario_clase_id", horarioId)
+      .eq("estado", "confirmada");
+    if (actual.horario?.estado !== "disponible" || (count ?? 0) > 0) {
+      return { error: "Ese horario ya lo tomó otro alumno. Avísale a Gabriel para ajustarlo." };
+    }
+  }
+
   const { error: errorReserva } = await supabase
     .from("reservas")
     .update({ estado: resultado })

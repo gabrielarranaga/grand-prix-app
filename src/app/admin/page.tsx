@@ -4,7 +4,8 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { fechaLima } from "@/lib/fecha";
 import { hora12 } from "@/lib/horarios";
-import { mesActual, soles, ultimoDiaMes, type CategoriaFinanciera } from "@/lib/finanzas";
+import { mesActual, soles, sumarMeses, ultimoDiaMes, type CategoriaFinanciera } from "@/lib/finanzas";
+import { CuentasDelMes } from "./cuentas-del-mes";
 import { etiquetaOrigen } from "@/lib/origenes";
 import { PageHeader } from "@/components/page-header";
 import { GastoRapido } from "./finanzas/gasto-rapido";
@@ -30,7 +31,6 @@ export default async function AdminPage() {
 
   const [
     { data: clasesHoy },
-    { count: comprobantesPendientes },
     { data: compras },
     { data: movimientos },
     { data: alumnosNuevos },
@@ -45,15 +45,11 @@ export default async function AdminPage() {
       .eq("estado", "reservado")
       .order("hora_inicio")
       .returns<ClaseHoy[]>(),
-    supabase
-      .from("comprobantes_pago")
-      .select("id", { count: "exact", head: true })
-      .eq("estado", "pendiente"),
     supabase.from("compras_paquete").select("estado, precio").in("estado", ["pendiente", "parcial"]),
     supabase
       .from("movimientos_financieros")
-      .select("tipo, monto")
-      .gte("fecha", inicioMes)
+      .select("tipo, monto, fecha, categoria_id")
+      .gte("fecha", `${sumarMeses(mes, -2)}-01`)
       .lte("fecha", ultimoDiaMes(mes)),
     supabase
       .from("profiles")
@@ -67,12 +63,13 @@ export default async function AdminPage() {
       .returns<CategoriaFinanciera[]>(),
   ]);
 
-  const sinPagar = (compras ?? []).filter((c) => c.estado === "pendiente").length;
   const porCobrarSegundo = (compras ?? []).filter((c) => c.estado === "parcial");
+  const porCobrar = (compras ?? []).filter((c) => c.estado === "pendiente").length;
   const montoPorCobrar = porCobrarSegundo.reduce((s, c) => s + Number(c.precio) / 2, 0);
 
-  const ingresos = (movimientos ?? []).filter((m) => m.tipo === "ingreso").reduce((s, m) => s + Number(m.monto), 0);
-  const egresos = (movimientos ?? []).filter((m) => m.tipo === "egreso").reduce((s, m) => s + Number(m.monto), 0);
+  const delMes = (movimientos ?? []).filter((m) => m.fecha.slice(0, 7) === mes);
+  const ingresos = delMes.filter((m) => m.tipo === "ingreso").reduce((s, m) => s + Number(m.monto), 0);
+  const egresos = delMes.filter((m) => m.tipo === "egreso").reduce((s, m) => s + Number(m.monto), 0);
 
   const porOrigen = new Map<string, number>();
   for (const a of alumnosNuevos ?? []) {
@@ -98,15 +95,13 @@ export default async function AdminPage() {
         }
       />
 
-      {(comprobantesPendientes ?? 0) > 0 && (
+      {porCobrar > 0 && (
         <Link
           href="/admin/pagos"
           className="animate-in btn-press flex items-center justify-between gap-3 rounded-2xl bg-rojo text-white px-5 py-4"
         >
           <span className="font-semibold">
-            {comprobantesPendientes === 1
-              ? "1 pago por Yape para revisar"
-              : `${comprobantesPendientes} pagos por Yape para revisar`}
+            {porCobrar === 1 ? "1 alumno con pago por cobrar" : `${porCobrar} alumnos con pago por cobrar`}
           </span>
           <ArrowRight className="h-5 w-5 shrink-0" />
         </Link>
@@ -150,8 +145,8 @@ export default async function AdminPage() {
         {[
           { valor: soles(ingresos), etiqueta: "Entró este mes" },
           { valor: soles(egresos), etiqueta: "Salió este mes" },
+          { valor: soles(ingresos - egresos), etiqueta: "Ganancia del mes" },
           { valor: soles(montoPorCobrar), etiqueta: `Por cobrar (${porCobrarSegundo.length} segundos pagos)` },
-          { valor: String(sinPagar), etiqueta: "Eligieron paquete y no pagaron" },
         ].map((k, i) => (
           <div
             key={k.etiqueta}
@@ -166,6 +161,17 @@ export default async function AdminPage() {
           </div>
         ))}
       </dl>
+
+      <CuentasDelMes
+        mes={mes}
+        movimientos={(movimientos ?? []).map((m) => ({
+          tipo: m.tipo as "ingreso" | "egreso",
+          monto: Number(m.monto),
+          fecha: m.fecha,
+          categoria_id: m.categoria_id,
+        }))}
+        categorias={categorias ?? []}
+      />
 
       <section className="glass corte-asimetrico-sm p-5 sm:p-6">
         <h2 className="font-display text-lg font-extrabold tracking-[-0.02em] text-grafito mb-4">+ Anotar un gasto</h2>

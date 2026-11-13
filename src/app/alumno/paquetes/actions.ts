@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { avisarTelegram } from "@/lib/telegram";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -82,12 +83,9 @@ export async function elegirPaquete(
     return { error: error.message };
   }
 
-  // Yape/Plin se paga dentro de la app (captura + aprobacion del admin);
-  // efectivo y tarjeta todavia se coordinan por WhatsApp.
-  if (metodoPago === "yape" || metodoPago === "plin") {
-    redirect("/alumno/pago");
-  }
+  avisarTelegram(`🧾 ${profile.nombre} eligió el paquete ${paquete.nombre} (S/ ${paquete.precio}), pago por ${metodoPago}.`);
 
+  // Todos los pagos se coordinan por WhatsApp; el admin valida y libera los cupos.
   const etiquetaMetodo = ETIQUETA_METODO[metodoPago] ?? metodoPago;
   const etiquetaModalidad = ETIQUETA_MODALIDAD[modalidadPago] ?? modalidadPago;
   const mensaje = encodeURIComponent(
