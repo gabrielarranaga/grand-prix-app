@@ -70,7 +70,7 @@ export default async function InicioPage() {
       href: "/alumno/pago",
       detalle: faltaSegundoPago
         ? "Ya vas a mitad de curso. Completa tu pago para seguir reservando."
-        : "Coordina tu pago por WhatsApp. Apenas lo validemos, se desbloquean tus horarios.",
+        : "Coordina tu pago por WhatsApp. Con el primer pago (aunque sea el 50%) ya puedes reservar todas tus clases.",
     };
   } else if (avance.usadas < avance.incluidas) {
     siguiente = { texto: "Reservar una clase", href: "/alumno/horarios", detalle: "Elige el día y la hora que te acomode." };

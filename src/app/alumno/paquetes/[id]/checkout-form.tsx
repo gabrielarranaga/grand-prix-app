@@ -23,7 +23,7 @@ const MODALIDADES = [
   {
     value: "medio_medio",
     label: "En dos partes",
-    detalle: "50% ahora y 50% a mitad del curso.",
+    detalle: "50% ahora y 50% a mitad del curso. Con el primer pago ya reservas todas tus clases.",
   },
 ];
 

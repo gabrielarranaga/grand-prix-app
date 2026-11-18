@@ -89,7 +89,7 @@ export default async function PagosPage() {
             <em>Pagos</em> de paquetes
           </>
         }
-        bajada="Todo se coordina por WhatsApp. Cuando confirmes en tu Yape (o en la oficina) que llegó el pago, márcalo aquí: se desbloquean los horarios del alumno y el ingreso se anota solo en Finanzas."
+        bajada="Todo se coordina por WhatsApp. Cuando confirmes en tu Yape (o en la oficina) que llegó el pago, márcalo aquí: con el 50% el alumno ya puede reservar todas sus clases y el ingreso se anota solo en Finanzas."
       />
 
       {compras.length === 0 ? (
@@ -133,7 +133,7 @@ export default async function PagosPage() {
                   c.paquete &&
                   (usadasPorAlumno.get(c.alumno_id) ?? 0) >= Math.ceil(c.paquete.num_clases / 2) && (
                     <span className="text-xs font-semibold px-2.5 py-1.5 rounded-md bg-amber-500/15 text-amber-800">
-                      Ya va a mitad de curso · cobrar 50% restante
+                      Ya va a mitad de curso · recordar el 50% restante
                     </span>
                   )}
                 {c.alumno?.telefono && (
@@ -142,7 +142,7 @@ export default async function PagosPage() {
                       enlaceWhatsapp(
                         c.alumno.telefono,
                         c.estado === "parcial"
-                          ? `Hola ${c.alumno.nombre.split(" ")[0]}, te escribimos de Grand Prix. Ya vas a mitad de curso: para seguir reservando tus clases falta el segundo pago. Escríbenos por aquí y te decimos cómo pagar (Yape, Plin, efectivo o tarjeta). Apenas lo validemos, se desbloquean tus clases.`
+                          ? `Hola ${c.alumno.nombre.split(" ")[0]}, te escribimos de Grand Prix. Ya vas a mitad de curso: toca el segundo pago (el 50% restante). Escríbenos por aquí y te decimos cómo pagar (Yape, Plin, efectivo o tarjeta).`
                           : `Hola ${c.alumno.nombre.split(" ")[0]}, te escribimos de Grand Prix por tu paquete ${c.paquete?.nombre ?? ""}.`,
                       ) ?? undefined
                     }

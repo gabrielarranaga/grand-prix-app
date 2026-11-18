@@ -13,7 +13,7 @@ export function ticksPaquete(p: Paquete): string[] {
     `${p.num_clases} clases de 2 horas`,
   ];
   if (p.horas_circuito > 0) {
-    ticks.push(`${p.horas_circuito}h en circuito alterno de Marbal, Ventanilla`);
+    ticks.push(`${p.horas_circuito}h en circuito de práctica en Ventanilla, Callao`);
   }
   if (p.incluye_examen_medico) {
     ticks.push("Examen médico para tu brevete");
